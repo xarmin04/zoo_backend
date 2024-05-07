@@ -85,11 +85,11 @@ async def register(user_data: UserData):
     encrypted_user_data = {
         "username":  (user_data.username) if user_data.username else None,
         "email": (user_data.email),
-        "password": (user_data.password),
+        "password": encrypt_data(user_data.password),
         "retype_password": (user_data.retype_password) if user_data.retype_password else None,
         "dateOfBirth": (user_data.dateOfBirth) if user_data.dateOfBirth else None
     }
-   # I was origanly going to enctypt user-data however I'm having problem with decyption
+   # I was origanly going to enctypt user-date however I'm having problem with decyption
     ##encrypted_user_data = {
     ##    "username": encrypt_data (user_data.username) if user_data.username else None,
    ##     "email": encrypt_data(user_data.email),
@@ -98,7 +98,7 @@ async def register(user_data: UserData):
     ##    "dateOfBirth": encrypt_data(user_data.dateOfBirth) if user_data.dateOfBirth else None
  ## }
 
-    with open("user_data.json", "a+") as f:
+    with open("user_data1.json", "a+") as f:
         f.write(json.dumps(encrypted_user_data) + "\n")
      
 
@@ -106,15 +106,16 @@ async def register(user_data: UserData):
 
 @app.post("/login/")
 async def login(user_data: UserDataE):
-    with open("user_data.json", "r") as f:
+    with open("user_data1.json", "r") as f:
         for line in f:
             decrypted_user_data = json.loads(line)
             if ((decrypted_user_data["email"]) == user_data.email and
-                (decrypted_user_data["password"]) == user_data.password):
+                decrypt_data(decrypted_user_data["password"]) == user_data.password):
                 token = jwt.encode({"username": user_data.email}, Secret_key, algorithm="HS256")
                 return {"message": "Login successful", "token": token}
-            else:
-                 raise HTTPException(status_code=400, detail="User not in database")
+        # If no matching user is found after checking all lines, raise an exception
+        raise HTTPException(status_code=400, detail="User not in database")
+
 
 
     
